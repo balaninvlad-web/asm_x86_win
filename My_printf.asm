@@ -17,30 +17,7 @@ global My_printf
 ;        r9    = 5 аргумент       (формально шестой    аргумент функции)
 ;        stack>= 6 аргументы  
 
-My_printf:
-
-        push rax
-        push rcx
-        push rdx
-        push r8
-        push r9
-        
-        mov [rel out_char_buf], byte 'X'
-        sub rsp, 32
-        mov rcx, [rel hConsole]
-        lea rdx, [rel out_char_buf]
-        mov r8d, 1
-        lea r9, [rel written]
-        mov qword [rsp], 0
-        call WriteConsoleA
-        add rsp, 32
-        
-        pop r9
-        pop r8
-        pop rdx
-        pop rcx
-        pop rax
-        
+My_printf:        
         push r10
         push r9
         push r8
@@ -50,7 +27,8 @@ My_printf:
         push rdi
         push rbp
 
-        mov rdi, rcx
+        mov rdi, [rsp+24]
+        lea rbp, [rsp + 32]
 
         cmp qword [rel hConsole], 0
         jne .got_handle
@@ -60,10 +38,6 @@ My_printf:
 .got_handle:        
 
         xor r10, r10
-
-        mov rbp, rsp
-
-        add rbp, 24
 
 .print_loop:
         cmp byte [rdi], 0
@@ -76,6 +50,7 @@ My_printf:
         call Print_char
         jmp .print_loop
 .print_value:
+        inc rdi
         call Print_value
         inc rdi
         jmp .print_loop
@@ -87,6 +62,7 @@ My_printf:
         pop rdx
         pop r8
         pop r9
+        pop r10
 
         ret
 
@@ -126,10 +102,8 @@ Print_value:
     jmp .jmp_after_output
 
 Print_char_func:
-        push rdi
-        mov rdi, rbp
+        mov al, byte [rbp]   
         call Print_char
-        pop rdi
         jmp Print_value.jmp_after_output
 
 
